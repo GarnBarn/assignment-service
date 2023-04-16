@@ -1,6 +1,8 @@
 # Stage 1 - Builder: Import the golang container.
 FROM golang:1.20-alpine as builder
 
+ARG PORT=3000
+
 # Install ssh client and git
 RUN apk add --no-cache openssh-client git
 
@@ -32,5 +34,7 @@ RUN CGO_ENABLED=0 go build -o ./out/application .
 FROM alpine:3.16.2
 WORKDIR /app
 COPY --from=builder /app/out/application application
+
+EXPOSE ${PORT}
 
 CMD [ "/app/application" ]
