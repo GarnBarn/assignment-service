@@ -1,3 +1,5 @@
+github.com/GarnBarn/assignment-service v0.0.7 h1:+5D13MCkC2vodYnYhon6xAjmy82KD1DrMaWAcgpxCtw=
+github.com/GarnBarn/assignment-service v0.0.7/go.mod h1:cwn2DIx20s70RNHHU3yleoBjSs4Yp4BWg1xiZ0i8Ztc=
 github.com/GarnBarn/common-go v0.0.0-20230416162425-3e07187c642d h1:9D/aYId5XaRBXGFvb7acNJGbMButAXQilvAlM4JIKm8=
 github.com/GarnBarn/common-go v0.0.0-20230416162425-3e07187c642d/go.mod h1:E5Q7H1tYHzdN1iEvOR3J3LVW8JUJh4v+F8XrM5a1Gvg=
 github.com/bytedance/sonic v1.5.0/go.mod h1:ED5hyg4y6t3/9Ku1R6dU/4KyJ48DZ4jPhfY1O2AihPM=

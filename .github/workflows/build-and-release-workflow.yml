@@ -69,7 +69,7 @@ jobs:
         with:
           context: .
           push: true
-          tags: ${{ format('ghcr.io/garnbarn/assignment-service:{0}', needs.release-on-github.outputs.newTag) }}
+          tags: ${{ format('ghcr.io/garnbarn/gb-assignment-service:{0}', needs.release-on-github.outputs.newTag) }}
           github-token: ${{ secrets.GITHUB_TOKEN }}
           platforms: |
             linux/amd64

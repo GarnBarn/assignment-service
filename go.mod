@@ -1,8 +1,9 @@
-module github.com/GarnBarn/assignment-service
+module github.com/GarnBarn/gb-assignment-service
 
 go 1.20
 
 require (
+	github.com/GarnBarn/assignment-service v0.0.7
 	github.com/GarnBarn/common-go v0.0.0-20230416162425-3e07187c642d
 	github.com/joho/godotenv v1.5.1
 	github.com/kelseyhightower/envconfig v1.4.0
