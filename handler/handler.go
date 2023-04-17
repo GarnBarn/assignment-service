@@ -37,24 +37,16 @@ func (a *AssignmentHandler) GetAllAssignment(c *gin.Context) {
 	logrus.Debug("From Present: ", fromPresent)
 
 	assignments, err := a.assignmentService.GetAllAssignment(fromPresent)
-
-	assignmentPublic := []model.AssignmentPublic{}
-
-	for _, item := range assignments {
-		// TODO: Fill tag result.
-		assignmentPublic = append(assignmentPublic, model.ToAssignmentPublic(item, nil))
-	}
-
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
 		return
 	}
 
 	c.JSON(http.StatusOK, model.BulkResponse[model.AssignmentPublic]{
-		Count:    len(assignmentPublic),
+		Count:    len(assignments),
 		Previous: nil,
 		Next:     nil,
-		Results:  assignmentPublic,
+		Results:  assignments,
 	})
 }
 

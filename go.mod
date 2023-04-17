@@ -3,7 +3,7 @@ module github.com/GarnBarn/gb-assignment-service
 go 1.20
 
 require (
-	github.com/GarnBarn/common-go v0.2.1
+	github.com/GarnBarn/common-go v0.2.2
 	github.com/gin-gonic/gin v1.9.0
 	github.com/go-playground/validator/v10 v10.12.0
 	github.com/joho/godotenv v1.5.1
