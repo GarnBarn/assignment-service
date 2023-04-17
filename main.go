@@ -58,7 +58,7 @@ func main() {
 	assignmentService := service.NewAssignmentService(tagClient, assignmentRepository)
 
 	// Create Handler
-	assignmentHandler := handler.NewAssignmentHandler(*validate, assignmentService)
+	assignmentHandler := handler.NewAssignmentHandler(*validate, assignmentService, tagClient)
 
 	// Router
 	router := httpServer.Group("/api/v1")
@@ -67,6 +67,8 @@ func main() {
 	assignmentRouter := router.Group("/assignment")
 	assignmentRouter.POST("/", assignmentHandler.CreateAssignment)
 	assignmentRouter.GET("/", assignmentHandler.GetAllAssignment)
+	assignmentRouter.GET("/:assignmentId", assignmentHandler.GetAssignmentById)
+	assignmentRouter.PATCH("/:assignmentId", assignmentHandler.UpdateAssignment)
 
 	logrus.Info("Listening and serving HTTP on :", appConfig.HTTP_SERVER_PORT)
 	httpServer.Run(fmt.Sprint(":", appConfig.HTTP_SERVER_PORT))
