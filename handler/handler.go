@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"errors"
 	"net/http"
 
 	"github.com/GarnBarn/common-go/httpserver"
@@ -78,6 +79,12 @@ func (a *AssignmentHandler) CreateAssignment(c *gin.Context) {
 	assignment := assignmentRequest.ToAssignment(c.Param(httpserver.UserUidKey))
 
 	if err := a.assignmentService.CreateAssignment(&assignment); err != nil {
+		if errors.Is(err, service.ErrTagNotFound) {
+			c.JSON(http.StatusBadRequest, gin.H{
+				"message": err.Error(),
+			})
+			return
+		}
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"message": err.Error(),
 		})

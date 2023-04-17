@@ -3,15 +3,18 @@ package main
 import (
 	"fmt"
 
-	"github.com/GarnBarn/assignment-service/config"
 	"github.com/GarnBarn/common-go/database"
 	"github.com/GarnBarn/common-go/httpserver"
 	"github.com/GarnBarn/common-go/logger"
+	"github.com/GarnBarn/common-go/proto"
+	"github.com/GarnBarn/gb-assignment-service/config"
 	"github.com/GarnBarn/gb-assignment-service/handler"
 	"github.com/GarnBarn/gb-assignment-service/repository"
 	"github.com/GarnBarn/gb-assignment-service/service"
 	"github.com/go-playground/validator/v10"
 	"github.com/sirupsen/logrus"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
 )
 
 var (
@@ -36,6 +39,15 @@ func main() {
 		return
 	}
 
+	// Dial gRPC Server
+	grpcConn, err := grpc.Dial(appConfig.TAG_GRPC_SERVER, grpc.WithTransportCredentials(insecure.NewCredentials()))
+	if err != nil {
+		logrus.Fatalf("Can't connect gRPC Server: ", err)
+	}
+	defer grpcConn.Close()
+
+	tagClient := proto.NewTagClient(grpcConn)
+
 	// Create the required dependentices
 	validate := validator.New()
 
@@ -43,7 +55,7 @@ func main() {
 	assignmentRepository := repository.NewAssignmentRepository(db)
 
 	// Create service
-	assignmentService := service.NewAssignmentService(assignmentRepository)
+	assignmentService := service.NewAssignmentService(tagClient, assignmentRepository)
 
 	// Create Handler
 	assignmentHandler := handler.NewAssignmentHandler(*validate, assignmentService)

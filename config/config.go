@@ -13,6 +13,7 @@ type Config struct {
 	HTTP_SERVER_PORT        string `envconfig:"HTTP_SERVER_PORT" default:"3001"`
 	GIN_MODE                string `envconfig:"GIN_MODE" default:"release"`
 	MYSQL_CONNECTION_STRING string `envconfig:"MYSQL_CONNECTION_STRING"`
+	TAG_GRPC_SERVER         string `envconfig:"TAG_GRPC_SERVER" default:"localhost:5002"`
 }
 
 func Load() Config {
