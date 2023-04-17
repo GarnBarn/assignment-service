@@ -70,7 +70,8 @@ func (a *AssignmentHandler) CreateAssignment(c *gin.Context) {
 
 	assignment := assignmentRequest.ToAssignment(c.Param(httpserver.UserUidKey))
 
-	if err := a.assignmentService.CreateAssignment(&assignment); err != nil {
+	assignmentPublic, err := a.assignmentService.CreateAssignment(&assignment)
+	if err != nil {
 		if errors.Is(err, service.ErrTagNotFound) {
 			c.JSON(http.StatusBadRequest, gin.H{
 				"message": err.Error(),
@@ -82,9 +83,6 @@ func (a *AssignmentHandler) CreateAssignment(c *gin.Context) {
 		})
 		return
 	}
-
-	// TODO: Fill tag result.
-	assignmentPublic := model.ToAssignmentPublic(assignment, nil)
 
 	c.JSON(http.StatusCreated, assignmentPublic)
 
