@@ -10,10 +10,11 @@ import (
 	"github.com/GarnBarn/gb-assignment-service/model"
 	"github.com/GarnBarn/gb-assignment-service/repository"
 	"github.com/sirupsen/logrus"
+	"github.com/wagslane/go-rabbitmq"
 )
 
 type AssignmentService interface {
-	CreateAssignment(assignment *globalmodel.Assignment) (model.AssignmentPublic, error)
+	CreateAssignment(assignment *globalmodel.Assignment) error
 	GetAllAssignment(fromPresent bool) ([]model.AssignmentPublic, error)
 	GetAssignmentById(assignmentId int) (model.AssignmentPublic, error)
 	UpdateAssignment(updateAssignmentRequest *model.UpdateAssignmentRequest, id int) (model.AssignmentPublic, error)
@@ -22,6 +23,7 @@ type AssignmentService interface {
 type assignmentService struct {
 	tagClient            proto.TagClient
 	assignmentRepository repository.AssignmentRepository
+	rabbitmqPublisher    *rabbitmq.Publisher
 }
 
 var (
@@ -29,14 +31,15 @@ var (
 	ErrTagError    = errors.New("tag error")
 )
 
-func NewAssignmentService(tagClient proto.TagClient, assignmentRepository repository.AssignmentRepository) AssignmentService {
+func NewAssignmentService(tagClient proto.TagClient, assignmentRepository repository.AssignmentRepository, rabbitmqPublisher *rabbitmq.Publisher) AssignmentService {
 	return &assignmentService{
 		tagClient:            tagClient,
 		assignmentRepository: assignmentRepository,
+		rabbitmqPublisher:    rabbitmqPublisher,
 	}
 }
 
-func (a *assignmentService) CreateAssignment(assignmentData *globalmodel.Assignment) (result model.AssignmentPublic, err error) {
+func (a *assignmentService) CreateAssignment(assignmentData *globalmodel.Assignment) (err error) {
 	ctx := context.Background()
 	// Check if requested tag is exists
 	response, err := a.tagClient.IsTagExists(ctx, &proto.TagRequest{
@@ -46,30 +49,20 @@ func (a *assignmentService) CreateAssignment(assignmentData *globalmodel.Assignm
 
 	if err != nil {
 		logrus.Error(err)
-		return result, err
+		return err
 	}
 
 	if !response.IsExists {
 		logrus.Warn("Inputted tag is not found, ", assignmentData.TagID)
-		return result, ErrTagNotFound
+		return ErrTagNotFound
 	}
 
-	err = a.assignmentRepository.CreateAssignment(assignmentData)
+	assignmentByte, err := json.Marshal(assignmentData)
 	if err != nil {
 		logrus.Error(err)
-		return result, err
+		return err
 	}
-
-	// Get Tag Data
-	tagResult, err := a.tagClient.GetTag(ctx, &proto.TagRequest{
-		TagId:             int32(assignmentData.TagID),
-		ConsealPrivateKey: false,
-	})
-	j, err := json.MarshalIndent(tagResult, "", "\t")
-
-	result = model.ToAssignmentPublic(*assignmentData, (*json.RawMessage)(&j))
-
-	return result, err
+	return a.rabbitmqPublisher.Publish(assignmentByte, []string{"create"})
 }
 
 func (a *assignmentService) GetAllAssignment(fromPresent bool) (result []model.AssignmentPublic, err error) {

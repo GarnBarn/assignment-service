@@ -80,7 +80,7 @@ func (a *AssignmentHandler) CreateAssignment(c *gin.Context) {
 
 	assignment := assignmentRequest.ToAssignment(c.Param(httpserver.UserUidKey))
 
-	assignmentPublic, err := a.assignmentService.CreateAssignment(&assignment)
+	err = a.assignmentService.CreateAssignment(&assignment)
 	if err != nil {
 		if errors.Is(err, service.ErrTagNotFound) {
 			c.JSON(http.StatusBadRequest, gin.H{
@@ -94,7 +94,7 @@ func (a *AssignmentHandler) CreateAssignment(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusCreated, assignmentPublic)
+	c.JSON(http.StatusCreated, gin.H{"message": "success."})
 
 }
 
