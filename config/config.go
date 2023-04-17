@@ -10,10 +10,10 @@ import (
 
 type Config struct {
 	Env                     string
-	HTTP_SERVER_PORT        string `envconfig:"HTTP_SERVER_PORT" default:"3000"`
+	HTTP_SERVER_PORT        string `envconfig:"HTTP_SERVER_PORT" default:"3001"`
 	GIN_MODE                string `envconfig:"GIN_MODE" default:"release"`
 	MYSQL_CONNECTION_STRING string `envconfig:"MYSQL_CONNECTION_STRING"`
-	FIREBASE_CONFIG_FILE    string `envconfig:"FIREBASE_CONFIG_FILE" default:"firebase-credential.json"`
+	TAG_GRPC_SERVER         string `envconfig:"TAG_GRPC_SERVER" default:"localhost:5002"`
 }
 
 func Load() Config {
