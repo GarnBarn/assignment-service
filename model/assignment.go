@@ -72,3 +72,34 @@ func (ar *AssignmentRequest) ToAssignment(author string) model.Assignment {
 		TagID:        tagIdInt,
 	}
 }
+
+type UpdateAssignmentRequest struct {
+	Name         *string `json:"name,omitempty"`
+	Description  *string `json:"description,omitempty"`
+	DueDate      *int    `json:"dueDate,omitempty"`
+	TagId        *int    `json:"tagId,omitempty"`
+	ReminderTime *[]int  `json:"reminderTime,omitempty" validate:"max=3,omitempty"`
+}
+
+func (ur *UpdateAssignmentRequest) UpdateAssignment(assignment *model.Assignment) {
+	if ur.Name != nil {
+		assignment.Name = *ur.Name
+	}
+	if ur.Description != nil {
+		assignment.Description = *ur.Description
+	}
+	if ur.DueDate != nil {
+		assignment.DueDate = *ur.DueDate
+	}
+	if ur.TagId != nil {
+		assignment.TagID = *ur.TagId
+	}
+	if ur.ReminderTime != nil {
+		assignment.ReminderTime = convertReminterTimeToString(*ur.ReminderTime)
+	}
+}
+
+func convertReminterTimeToString(reminterTime []int) string {
+	reminderTimeByte, _ := json.Marshal(reminterTime)
+	return strings.Trim(string(reminderTimeByte), "[]")
+}
