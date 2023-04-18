@@ -76,7 +76,7 @@ func main() {
 	assignmentRepository := repository.NewAssignmentRepository(db)
 
 	// Create service
-	assignmentService := service.NewAssignmentService(tagClient, assignmentRepository, publisher)
+	assignmentService := service.NewAssignmentService(tagClient, assignmentRepository, publisher, appConfig)
 
 	// Create Handler
 	assignmentHandler := handler.NewAssignmentHandler(*validate, assignmentService, tagClient)

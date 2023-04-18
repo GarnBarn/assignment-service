@@ -7,6 +7,7 @@ import (
 
 	globalmodel "github.com/GarnBarn/common-go/model"
 	"github.com/GarnBarn/common-go/proto"
+	"github.com/GarnBarn/gb-assignment-service/config"
 	"github.com/GarnBarn/gb-assignment-service/model"
 	"github.com/GarnBarn/gb-assignment-service/repository"
 	"github.com/sirupsen/logrus"
@@ -24,6 +25,7 @@ type assignmentService struct {
 	tagClient            proto.TagClient
 	assignmentRepository repository.AssignmentRepository
 	rabbitmqPublisher    *rabbitmq.Publisher
+	appConfig            config.Config
 }
 
 var (
@@ -31,11 +33,12 @@ var (
 	ErrTagError    = errors.New("tag error")
 )
 
-func NewAssignmentService(tagClient proto.TagClient, assignmentRepository repository.AssignmentRepository, rabbitmqPublisher *rabbitmq.Publisher) AssignmentService {
+func NewAssignmentService(tagClient proto.TagClient, assignmentRepository repository.AssignmentRepository, rabbitmqPublisher *rabbitmq.Publisher, appConfig config.Config) AssignmentService {
 	return &assignmentService{
 		tagClient:            tagClient,
 		assignmentRepository: assignmentRepository,
 		rabbitmqPublisher:    rabbitmqPublisher,
+		appConfig:            appConfig,
 	}
 }
 
@@ -62,7 +65,7 @@ func (a *assignmentService) CreateAssignment(assignmentData *globalmodel.Assignm
 		logrus.Error(err)
 		return err
 	}
-	return a.rabbitmqPublisher.Publish(assignmentByte, []string{"create"})
+	return a.rabbitmqPublisher.Publish(assignmentByte, []string{"create"}, rabbitmq.WithPublishOptionsExchange(a.appConfig.RABBITMQ_ASSIGNMENT_EXCHANGE))
 }
 
 func (a *assignmentService) GetAllAssignment(fromPresent bool) (result []model.AssignmentPublic, err error) {
