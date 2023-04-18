@@ -4,13 +4,11 @@ import (
 	"time"
 
 	"github.com/GarnBarn/common-go/model"
-	"github.com/sirupsen/logrus"
 	"gorm.io/gorm"
 )
 
 type AssignmentRepository interface {
 	GetAllAssignment(formPresent bool) ([]model.Assignment, error)
-	CreateAssignment(assignment *model.Assignment) error
 	GetByID(id int) (*model.Assignment, error)
 	Update(assignment *model.Assignment) error
 }
@@ -26,21 +24,6 @@ func NewAssignmentRepository(db *gorm.DB) AssignmentRepository {
 	return &assignmentRepository{
 		db: db,
 	}
-}
-
-func (a *assignmentRepository) CreateAssignment(assignmentData *model.Assignment) error {
-	logrus.Debug("Executing Create on %T", assignmentData)
-
-	res := a.db.Create(assignmentData)
-
-	// HandleError
-	if res.Error != nil && res.Error != gorm.ErrRecordNotFound {
-		logrus.Error(res.Error)
-		return res.Error
-	}
-
-	a.db.First(assignmentData, assignmentData.ID)
-	return nil
 }
 
 func (a *assignmentRepository) GetAllAssignment(fromPresent bool) (result []model.Assignment, err error) {
