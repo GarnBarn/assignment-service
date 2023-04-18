@@ -7,7 +7,13 @@ services:
     environment:
       - MYSQL_ROOT_PASSWORD=P@ssw0rd
       - MYSQL_DATABASE=garnbarn-assignment
-
+  db-tag:
+    image: mysql:8.0.32
+    ports:
+      - 3307:3306
+    environment:
+      - MYSQL_ROOT_PASSWORD=P@ssw0rd
+      - MYSQL_DATABASE=garnbarn-tag
   phpmyadmin:
     image: phpmyadmin:5.2.1
     restart: always
@@ -15,3 +21,14 @@ services:
       - 8080:80
     links:
       - db-assignment
+  gb-tag-service:
+    image: ghcr.io/garnbarn/gb-tag-service:latest
+    restart: always
+    ports:
+      - 5002:5002
+      - 3002:3000
+    environment:
+      - MYSQL_CONNECTION_STRING=root:P@ssw0rd@tcp(db-tag:3306)/garnbarn-tag?charset=utf8mb4&parseTime=True&loc=Local
+      - ENV=dev
+    links:
+      - db-tag
