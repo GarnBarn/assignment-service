@@ -15,6 +15,8 @@ import (
 type AssignmentService interface {
 	CreateAssignment(assignment *globalmodel.Assignment) (model.AssignmentPublic, error)
 	GetAllAssignment(fromPresent bool) ([]model.AssignmentPublic, error)
+	GetAssignmentById(assignmentId int) (model.AssignmentPublic, error)
+	UpdateAssignment(updateAssignmentRequest *model.UpdateAssignmentRequest, id int) (model.AssignmentPublic, error)
 }
 
 type assignmentService struct {
@@ -24,6 +26,7 @@ type assignmentService struct {
 
 var (
 	ErrTagNotFound = errors.New("tag not found")
+	ErrTagError    = errors.New("tag error")
 )
 
 func NewAssignmentService(tagClient proto.TagClient, assignmentRepository repository.AssignmentRepository) AssignmentService {
@@ -96,4 +99,54 @@ func (a *assignmentService) GetAllAssignment(fromPresent bool) (result []model.A
 
 	return result, err
 
+}
+
+func (a *assignmentService) UpdateAssignment(updateAssignmentRequest *model.UpdateAssignmentRequest, id int) (model.AssignmentPublic, error) {
+	assignment, err := a.assignmentRepository.GetByID(id)
+	if err != nil {
+		logrus.Error(err)
+		return model.AssignmentPublic{}, err
+	}
+	updateAssignmentRequest.UpdateAssignment(assignment)
+
+	// Get Tag from tag service
+	ctx := context.Background()
+	tagResult, err := a.tagClient.GetTag(ctx, &proto.TagRequest{TagId: int32(assignment.TagID), ConsealPrivateKey: true})
+	if err != nil {
+		logrus.Warnln("Getting tag error for ", assignment.TagID, " : ", err)
+		return model.AssignmentPublic{}, ErrTagError
+	}
+
+	// Update Assignment
+	err = a.assignmentRepository.Update(assignment)
+
+	j, err := json.MarshalIndent(tagResult, "", "\t")
+	if err != nil {
+		logrus.Warn("Convert protobuf to json failed:", err)
+		return model.AssignmentPublic{}, err
+	}
+
+	return model.ToAssignmentPublic(*assignment, (*json.RawMessage)(&j)), err
+}
+
+func (a *assignmentService) GetAssignmentById(assignmentId int) (model.AssignmentPublic, error) {
+	assignment, err := a.assignmentRepository.GetByID(assignmentId)
+	if err != nil {
+		logrus.Error(err)
+		return model.AssignmentPublic{}, err
+	}
+
+	ctx := context.Background()
+	tagResult, err := a.tagClient.GetTag(ctx, &proto.TagRequest{TagId: int32(assignment.TagID), ConsealPrivateKey: true})
+	if err != nil {
+		logrus.Warnln("Getting tag error for ", assignment.TagID, " : ", err)
+		return model.AssignmentPublic{}, err
+	}
+
+	j, err := json.MarshalIndent(tagResult, "", "\t")
+	if err != nil {
+		logrus.Warn("Convert protobuf to json failed:", err)
+	}
+
+	return model.ToAssignmentPublic(*assignment, (*json.RawMessage)(&j)), nil
 }
