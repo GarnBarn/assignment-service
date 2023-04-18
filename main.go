@@ -13,6 +13,7 @@ import (
 	"github.com/GarnBarn/gb-assignment-service/service"
 	"github.com/go-playground/validator/v10"
 	"github.com/sirupsen/logrus"
+	"github.com/wagslane/go-rabbitmq"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 )
@@ -39,6 +40,26 @@ func main() {
 		return
 	}
 
+	// Connect RabbitMQ
+	conn, err := rabbitmq.NewConn(
+		appConfig.RABBITMQ_CONNECTION,
+		rabbitmq.WithConnectionOptionsLogging,
+	)
+	if err != nil {
+		logrus.Fatal(err)
+	}
+	defer conn.Close()
+
+	publisher, err := rabbitmq.NewPublisher(
+		conn,
+		rabbitmq.WithPublisherOptionsLogging,
+		rabbitmq.WithPublisherOptionsExchangeName(appConfig.RABBITMQ_ASSIGNMENT_EXCHANGE),
+	)
+	if err != nil {
+		logrus.Fatal(err)
+	}
+	defer publisher.Close()
+
 	// Dial gRPC Server
 	grpcConn, err := grpc.Dial(appConfig.TAG_GRPC_SERVER, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
@@ -55,7 +76,7 @@ func main() {
 	assignmentRepository := repository.NewAssignmentRepository(db)
 
 	// Create service
-	assignmentService := service.NewAssignmentService(tagClient, assignmentRepository)
+	assignmentService := service.NewAssignmentService(tagClient, assignmentRepository, publisher, appConfig)
 
 	// Create Handler
 	assignmentHandler := handler.NewAssignmentHandler(*validate, assignmentService, tagClient)
