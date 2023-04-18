@@ -26,6 +26,7 @@ type assignmentService struct {
 
 var (
 	ErrTagNotFound = errors.New("tag not found")
+	ErrTagError    = errors.New("tag error")
 )
 
 func NewAssignmentService(tagClient proto.TagClient, assignmentRepository repository.AssignmentRepository) AssignmentService {
@@ -107,14 +108,17 @@ func (a *assignmentService) UpdateAssignment(updateAssignmentRequest *model.Upda
 		return model.AssignmentPublic{}, err
 	}
 	updateAssignmentRequest.UpdateAssignment(assignment)
-	err = a.assignmentRepository.Update(assignment)
 
+	// Get Tag from tag service
 	ctx := context.Background()
 	tagResult, err := a.tagClient.GetTag(ctx, &proto.TagRequest{TagId: int32(assignment.TagID), ConsealPrivateKey: true})
 	if err != nil {
 		logrus.Warnln("Getting tag error for ", assignment.TagID, " : ", err)
-		return model.AssignmentPublic{}, err
+		return model.AssignmentPublic{}, ErrTagError
 	}
+
+	// Update Assignment
+	err = a.assignmentRepository.Update(assignment)
 
 	j, err := json.MarshalIndent(tagResult, "", "\t")
 	if err != nil {

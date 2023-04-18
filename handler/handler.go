@@ -1,12 +1,12 @@
 package handler
 
 import (
-	"context"
 	"errors"
-	"github.com/GarnBarn/common-go/proto"
-	"gorm.io/gorm"
 	"net/http"
 	"strconv"
+
+	"github.com/GarnBarn/common-go/proto"
+	"gorm.io/gorm"
 
 	"github.com/GarnBarn/common-go/httpserver"
 	"github.com/GarnBarn/gb-assignment-service/model"
@@ -128,23 +128,6 @@ func (a *AssignmentHandler) UpdateAssignment(c *gin.Context) {
 		logrus.Warn("Struct validation failed: ", err)
 		c.JSON(http.StatusBadRequest, gin.H{"message": err.Error()})
 		return
-	}
-
-	//Check is tag exist
-	updateTagIdRequest := updateAssignmentRequest.TagId
-	if updateTagIdRequest != nil {
-		ctx := context.Background()
-		response, err := a.tagClient.IsTagExists(ctx, &proto.TagRequest{TagId: int32(*updateTagIdRequest)})
-		if err != nil {
-			logrus.Warnln("Check is tag exist error for ", updateTagIdRequest, " : ", err)
-			c.JSON(http.StatusInternalServerError, ErrGinBadRequestBody)
-			return
-		}
-		if response.IsExists == false {
-			logrus.Warn("Tag id is not exist")
-			c.JSON(http.StatusBadRequest, ErrGinBadRequestBody)
-			return
-		}
 	}
 
 	publicAssignment, err := a.assignmentService.UpdateAssignment(&updateAssignmentRequest, assignmentId)
