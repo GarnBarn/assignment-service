@@ -90,6 +90,7 @@ func main() {
 	assignmentRouter.GET("/", assignmentHandler.GetAllAssignment)
 	assignmentRouter.GET("/:assignmentId", assignmentHandler.GetAssignmentById)
 	assignmentRouter.PATCH("/:assignmentId", assignmentHandler.UpdateAssignment)
+	assignmentRouter.DELETE("/:assignmentId", assignmentHandler.DeleteAssignment)
 
 	logrus.Info("Listening and serving HTTP on :", appConfig.HTTP_SERVER_PORT)
 	httpServer.Run(fmt.Sprint(":", appConfig.HTTP_SERVER_PORT))

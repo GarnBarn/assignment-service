@@ -21,6 +21,8 @@ services:
       - 8080:80
     links:
       - db-assignment
+    environment:
+      - PMA_HOST=db-assignment
   gb-tag-service:
     image: ghcr.io/garnbarn/gb-tag-service:latest
     restart: always
