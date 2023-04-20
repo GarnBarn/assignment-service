@@ -19,6 +19,7 @@ type AssignmentService interface {
 	GetAllAssignment(fromPresent bool) ([]model.AssignmentPublic, error)
 	GetAssignmentById(assignmentId int) (model.AssignmentPublic, error)
 	UpdateAssignment(updateAssignmentRequest *model.UpdateAssignmentRequest, id int) (model.AssignmentPublic, error)
+	DeleteAssignment(assignmentId int) error
 }
 
 type assignmentService struct {
@@ -145,4 +146,15 @@ func (a *assignmentService) GetAssignmentById(assignmentId int) (model.Assignmen
 	}
 
 	return model.ToAssignmentPublic(*assignment, (*json.RawMessage)(&j)), nil
+}
+
+func (a *assignmentService) DeleteAssignment(assignmentId int) error {
+	logrus.Info("Check delete assignment")
+	defer logrus.Info("Complete delete assignment")
+	assignmentRequestByte, err := json.Marshal(globalmodel.AssignmentDeleteRequest{ID: assignmentId})
+	if err != nil {
+		logrus.Error(err)
+		return err
+	}
+	return a.rabbitmqPublisher.Publish(assignmentRequestByte, []string{"delete"}, rabbitmq.WithPublishOptionsExchange(a.appConfig.RABBITMQ_ASSIGNMENT_EXCHANGE))
 }
