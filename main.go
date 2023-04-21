@@ -33,6 +33,7 @@ func init() {
 func main() {
 	// Create the http server
 	httpServer := httpserver.NewHttpServer()
+	httpServer.Use(httpserver.AuthModelMapping())
 
 	db, err := database.Conn(appConfig.MYSQL_CONNECTION_STRING)
 	if err != nil {
