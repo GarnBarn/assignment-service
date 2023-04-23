@@ -78,7 +78,7 @@ func (a *AssignmentHandler) CreateAssignment(c *gin.Context) {
 		return
 	}
 
-	assignment := assignmentRequest.ToAssignment(c.Param(httpserver.UserUidKey))
+	assignment := assignmentRequest.ToAssignment(c.GetHeader(httpserver.UserUidKey))
 
 	err = a.assignmentService.CreateAssignment(&assignment)
 	if err != nil {
