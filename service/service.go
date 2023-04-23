@@ -69,7 +69,7 @@ func (a *assignmentService) CreateAssignment(assignmentData *globalmodel.Assignm
 	return a.rabbitmqPublisher.Publish(assignmentByte, []string{"create"}, rabbitmq.WithPublishOptionsExchange(a.appConfig.RABBITMQ_ASSIGNMENT_EXCHANGE))
 }
 
-func (a *assignmentService) GetAllAssignment(fromPresent bool) (result []model.AssignmentPublic, err error) {
+func (a *assignmentService) GetAllAssignment(fromPresent bool) ([]model.AssignmentPublic, error) {
 
 	assignments, err := a.assignmentRepository.GetAllAssignment(fromPresent)
 	if err != nil {
@@ -79,6 +79,7 @@ func (a *assignmentService) GetAllAssignment(fromPresent bool) (result []model.A
 	// Fillin the tag data into the assignment public model
 
 	ctx := context.Background()
+	result := []model.AssignmentPublic{}
 	for _, item := range assignments {
 		tagResult, err := a.tagClient.GetTag(ctx, &proto.TagRequest{TagId: int32(item.TagID), ConsealPrivateKey: true})
 		if err != nil {
